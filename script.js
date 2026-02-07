@@ -1221,3 +1221,484 @@ document.addEventListener('DOMContentLoaded', function() {
 // Add to your existing DOMContentLoaded event
 // Call initTechExpertise() in your main DOMContentLoaded function
 });
+
+// Modern Services JavaScript
+function initModernServices() {
+    console.log('🚀 Initializing Modern Services...');
+    
+    // Filter services by category
+    const categoryFilters = document.querySelectorAll('.category-filter');
+    const serviceCards = document.querySelectorAll('.service-card-modern');
+    
+    if (categoryFilters.length > 0) {
+        categoryFilters.forEach(filter => {
+            filter.addEventListener('click', function() {
+                // Update active filter
+                categoryFilters.forEach(f => f.classList.remove('active'));
+                this.classList.add('active');
+                
+                const category = this.getAttribute('data-category');
+                
+                // Filter service cards
+                serviceCards.forEach(card => {
+                    if (category === 'all' || card.getAttribute('data-service') === category) {
+                        card.style.display = 'block';
+                        card.style.animation = 'fadeIn 0.5s ease';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+        });
+    }
+    
+    // Service card hover effects
+    serviceCards.forEach(card => {
+        // Color coding based on service type
+        const serviceType = card.getAttribute('data-service');
+        const colorMap = {
+            'web': '#3b82f6',
+            'mobile': '#10b981',
+            'ecommerce': '#8b5cf6',
+            'seo': '#f59e0b',
+            'wordpress': '#ef4444',
+            'consultation': '#ec4899'
+        };
+        
+        const serviceColor = colorMap[serviceType] || '#3b82f6';
+        
+        // Add hover gradient effect
+        card.addEventListener('mouseenter', function() {
+            this.style.setProperty('--hover-color', serviceColor);
+            
+            // Animate tech tags
+            const techTags = this.querySelectorAll('.tech-tag');
+            techTags.forEach((tag, index) => {
+                tag.style.transitionDelay = `${index * 0.1}s`;
+                tag.style.transform = 'translateY(-5px)';
+                tag.style.boxShadow = `0 5px 15px ${serviceColor}33`;
+            });
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            const techTags = this.querySelectorAll('.tech-tag');
+            techTags.forEach((tag, index) => {
+                tag.style.transitionDelay = `${index * 0.05}s`;
+                tag.style.transform = 'translateY(0)';
+                tag.style.boxShadow = 'none';
+            });
+        });
+        
+        // Click to expand service details
+        card.addEventListener('click', function(e) {
+            if (!e.target.closest('.service-cta')) {
+                toggleServiceDetails(this);
+            }
+        });
+    });
+    
+    // Animate stats
+    const statNumbers = document.querySelectorAll('.stat-number-service');
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const numberElement = entry.target;
+                const target = parseInt(numberElement.getAttribute('data-count'));
+                animateServiceStat(numberElement, target);
+            }
+        });
+    }, { threshold: 0.5 });
+    
+    statNumbers.forEach(number => observer.observe(number));
+}
+
+// Animate service stat numbers
+function animateServiceStat(element, target) {
+    if (element.classList.contains('animated')) return;
+    
+    element.classList.add('animated');
+    let start = null;
+    const duration = 2000;
+    
+    function step(timestamp) {
+        if (!start) start = timestamp;
+        const progress = timestamp - start;
+        const percentage = Math.min(progress / duration, 1);
+        
+        // Easing function
+        const easeOutBack = 1 - Math.pow(1 - percentage, 4);
+        const current = Math.floor(easeOutBack * target);
+        
+        element.textContent = current.toLocaleString('fa-IR');
+        
+        if (progress < duration) {
+            requestAnimationFrame(step);
+        } else {
+            element.textContent = target.toLocaleString('fa-IR');
+            
+            // Add celebration effect for milestones
+            if (target >= 100) {
+                createConfetti(element);
+            }
+        }
+    }
+    
+    requestAnimationFrame(step);
+}
+
+// Toggle service details
+function toggleServiceDetails(card) {
+    const details = card.querySelector('.service-details-expanded');
+    
+    if (details) {
+        // Collapse details
+        details.style.animation = 'slideUp 0.3s ease';
+        setTimeout(() => details.remove(), 300);
+        return;
+    }
+    
+    // Create expanded details
+    const serviceType = card.getAttribute('data-service');
+    const serviceTitle = card.querySelector('.service-title').textContent;
+    const serviceDescription = card.querySelector('.service-description').textContent;
+    const servicePrice = card.querySelector('.price-value').textContent;
+    
+    const detailsElement = document.createElement('div');
+    detailsElement.className = 'service-details-expanded';
+    detailsElement.innerHTML = `
+        <div class="details-header">
+            <h4>جزئیات کامل ${serviceTitle}</h4>
+            <button class="btn-close-details">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="details-content">
+            <div class="details-section">
+                <h5><i class="fas fa-list-check"></i> مراحل کار</h5>
+                <ol class="work-steps">
+                    <li>مشاوره و تحلیل پروژه</li>
+                    <li>طراحی اولیه و برنامه‌ریزی</li>
+                    <li>توسعه و پیاده‌سازی</li>
+                    <li>تست و کنترل کیفیت</li>
+                    <li>تحویل و پشتیبانی</li>
+                </ol>
+            </div>
+            
+            <div class="details-section">
+                <h5><i class="fas fa-clock"></i> زمان تحویل</h5>
+                <div class="delivery-time">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>${getDeliveryTime(serviceType)}</span>
+                </div>
+            </div>
+            
+            <div class="details-section">
+                <h5><i class="fas fa-shield-alt"></i> گارانتی</h5>
+                <div class="warranty">
+                    <i class="fas fa-award"></i>
+                    <span>${getWarrantyPeriod(serviceType)} ماه گارانتی</span>
+                </div>
+            </div>
+            
+            <div class="details-section">
+                <h5><i class="fas fa-handshake"></i> تعهدات ما</h5>
+                <ul class="commitments">
+                    <li><i class="fas fa-check"></i> کدنویسی تمیز و استاندارد</li>
+                    <li><i class="fas fa-check"></i> تست کامل در مراحل مختلف</li>
+                    <li><i class="fas fa-check"></i> مستندسازی کامل پروژه</li>
+                    <li><i class="fas fa-check"></i> پشتیبانی ۶ ماهه رایگان</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="details-footer">
+            <div class="price-summary">
+                <span class="price-label">هزینه پروژه:</span>
+                <span class="price-value">${servicePrice}</span>
+            </div>
+            <button class="btn-order-now">
+                <i class="fas fa-shopping-cart"></i>
+                سفارش آنلاین
+            </button>
+        </div>
+    `;
+    
+    card.appendChild(detailsElement);
+    
+    // Close button
+    const closeBtn = detailsElement.querySelector('.btn-close-details');
+    closeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        detailsElement.style.animation = 'slideUp 0.3s ease';
+        setTimeout(() => detailsElement.remove(), 300);
+    });
+    
+    // Order button
+    const orderBtn = detailsElement.querySelector('.btn-order-now');
+    orderBtn.addEventListener('click', () => {
+        window.location.href = '#start-project';
+    });
+    
+    // Add styles for expanded details
+    addExpandedDetailsStyles();
+}
+
+// Helper functions
+function getDeliveryTime(serviceType) {
+    const times = {
+        'web': '۲-۴ هفته',
+        'mobile': '۴-۸ هفته',
+        'ecommerce': '۳-۶ هفته',
+        'seo': 'ماهانه',
+        'wordpress': '۲-۳ هفته',
+        'consultation': '۱-۲ روز کاری'
+    };
+    return times[serviceType] || 'مشخص نشده';
+}
+
+function getWarrantyPeriod(serviceType) {
+    const periods = {
+        'web': '۶',
+        'mobile': '۱۲',
+        'ecommerce': '۶',
+        'seo': '۳',
+        'wordpress': '۶',
+        'consultation': '۱'
+    };
+    return periods[serviceType] || '۳';
+}
+
+// Confetti effect for milestones
+function createConfetti(element) {
+    const colors = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444'];
+    
+    for (let i = 0; i < 50; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        const size = Math.random() * 10 + 5;
+        const posX = Math.random() * 100;
+        const duration = Math.random() * 1 + 0.5;
+        
+        confetti.style.cssText = `
+            position: absolute;
+            width: ${size}px;
+            height: ${size}px;
+            background: ${color};
+            border-radius: ${size < 8 ? '50%' : '3px'};
+            left: ${posX}%;
+            top: 50%;
+            z-index: 1000;
+            pointer-events: none;
+            animation: confettiFall ${duration}s ease-out forwards;
+        `;
+        
+        element.parentElement.appendChild(confetti);
+        
+        // Remove after animation
+        setTimeout(() => confetti.remove(), duration * 1000);
+    }
+}
+
+// Add expanded details styles
+function addExpandedDetailsStyles() {
+    if (!document.querySelector('#expanded-details-styles')) {
+        const style = document.createElement('style');
+        style.id = 'expanded-details-styles';
+        style.textContent = `
+            .service-details-expanded {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: white;
+                border-radius: 20px;
+                padding: 25px;
+                margin-top: 15px;
+                z-index: 100;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+                animation: slideDown 0.3s ease;
+                border: 1px solid #f1f5f9;
+            }
+            
+            @keyframes slideDown {
+                from { opacity: 0; transform: translateY(-20px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            
+            @keyframes slideUp {
+                from { opacity: 1; transform: translateY(0); }
+                to { opacity: 0; transform: translateY(-20px); }
+            }
+            
+            .details-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 20px;
+                padding-bottom: 15px;
+                border-bottom: 1px solid #f1f5f9;
+            }
+            
+            .details-header h4 {
+                font-size: 1.2rem;
+                color: #1e293b;
+                margin: 0;
+            }
+            
+            .btn-close-details {
+                background: #f1f5f9;
+                border: none;
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                color: #64748b;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            
+            .btn-close-details:hover {
+                background: #ef4444;
+                color: white;
+                transform: rotate(90deg);
+            }
+            
+            .details-content {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 20px;
+                margin-bottom: 25px;
+            }
+            
+            .details-section h5 {
+                font-size: 1rem;
+                color: #475569;
+                margin-bottom: 12px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            
+            .details-section h5 i {
+                color: #3b82f6;
+            }
+            
+            .work-steps {
+                padding-right: 20px;
+                margin: 0;
+                color: #64748b;
+                line-height: 1.8;
+            }
+            
+            .work-steps li {
+                margin-bottom: 8px;
+            }
+            
+            .delivery-time, .warranty {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 12px;
+                background: #f8fafc;
+                border-radius: 12px;
+                color: #475569;
+                font-weight: 500;
+            }
+            
+            .delivery-time i, .warranty i {
+                color: #10b981;
+                font-size: 20px;
+            }
+            
+            .commitments {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+            }
+            
+            .commitments li {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                margin-bottom: 10px;
+                color: #475569;
+            }
+            
+            .commitments i {
+                color: #10b981;
+                font-size: 14px;
+            }
+            
+            .details-footer {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding-top: 20px;
+                border-top: 1px solid #f1f5f9;
+            }
+            
+            .price-summary {
+                display: flex;
+                flex-direction: column;
+                gap: 5px;
+            }
+            
+            .price-summary .price-label {
+                font-size: 14px;
+                color: #94a3b8;
+            }
+            
+            .price-summary .price-value {
+                font-size: 1.5rem;
+                font-weight: 800;
+                color: #1e293b;
+            }
+            
+            .btn-order-now {
+                background: linear-gradient(90deg, #10b981, #059669);
+                color: white;
+                border: none;
+                padding: 15px 30px;
+                border-radius: 12px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+            
+            .btn-order-now:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+            }
+            
+            @keyframes confettiFall {
+                0% {
+                    transform: translateY(-100px) rotate(0deg);
+                    opacity: 1;
+                }
+                100% {
+                    transform: translateY(100px) rotate(360deg);
+                    opacity: 0;
+                }
+            }
+            
+            @keyframes fadeIn {
+                from { opacity: 0; }
+                to { opacity: 1; }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+}
+
+// Initialize on load
+document.addEventListener('DOMContentLoaded', function() {
+    initModernServices();
+});
